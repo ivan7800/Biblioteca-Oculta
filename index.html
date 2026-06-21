@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+  <meta name="description" content="Universo 404: Biblioteca Oculta — tarot, ouija simulada, runas, I Ching, sueños, luna, grimorio, bestiario y símbolos en una PWA offline." />
+  <meta name="theme-color" content="#09070b" />
+  <title>Universo 404 · Biblioteca Oculta</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <noscript><div class="noscript">Activa JavaScript para usar la Biblioteca Oculta. La app funciona offline y no envía datos a servidores.</div></noscript>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="app-shell">
+    <header class="hero">
+      <nav class="topbar" aria-label="Navegación principal">
+        <a class="brand" href="#inicio" data-route="inicio" aria-label="Ir al inicio">
+          <span class="brand-mark">404</span>
+          <span><strong>Universo 404</strong><small>Biblioteca Oculta</small></span>
+        </a>
+        <button id="menuBtn" class="ghost-btn" type="button" aria-expanded="false" aria-controls="moduleNav">☰</button>
+      </nav>
+
+      <section class="hero-grid" id="inicio">
+        <div>
+          <p class="eyebrow">Archivo interactivo offline</p>
+          <h1>Una biblioteca esotérica para consultar, registrar y explorar símbolos.</h1>
+          <p class="lead">Tarot, ouija simulada, runas, I Ching, diario de sueños, calendario lunar, grimorio, bestiario, música ambiental y codex de símbolos en una única experiencia.</p>
+          <div class="hero-actions">
+            <button class="primary-btn" data-open="tarot">Abrir Tarot</button>
+            <button class="secondary-btn" data-open="diario">Nuevo registro</button>
+          </div>
+        </div>
+        <aside class="oracle-card" aria-label="Resumen del día">
+          <span class="sigil">◌</span>
+          <h2 id="dailyTitle">Lectura del archivo</h2>
+          <p id="dailyText">Pulsa para revelar una clave simbólica del día.</p>
+          <button id="dailyBtn" class="secondary-btn" type="button">Revelar</button>
+        </aside>
+      </section>
+    </header>
+
+    <aside id="moduleNav" class="side-nav" aria-label="Módulos">
+      <button data-open="tarot">Tarot</button>
+      <button data-open="ouija">Ouija</button>
+      <button data-open="runas">Runas</button>
+      <button data-open="iching">I Ching</button>
+      <button data-open="diario">Sueños</button>
+      <button data-open="luna">Luna</button>
+      <button data-open="grimorio">Grimorio</button>
+      <button data-open="bestiario">Bestiario</button>
+      <button data-open="simbolos">Símbolos</button>
+      <button data-open="archivo">Archivo 404</button>
+      <button data-open="audio">Ecos</button>
+    </aside>
+
+    <main>
+      <section class="library" aria-label="Biblioteca de módulos">
+        <article class="book" data-open="tarot"><span>✦</span><h3>Libro del Destino</h3><p>Tiradas de tarot y archivo de lecturas.</p></article>
+        <article class="book" data-open="ouija"><span>◉</span><h3>Libro de los Espíritus</h3><p>Tablero narrativo simulado y sesiones guardadas.</p></article>
+        <article class="book" data-open="runas"><span>ᚱ</span><h3>Libro de las Runas</h3><p>Elder Futhark, tiradas y significados.</p></article>
+        <article class="book" data-open="iching"><span>☯</span><h3>Libro de los Hexagramas</h3><p>Monedas, líneas mutables e interpretación.</p></article>
+        <article class="book" data-open="diario"><span>☾</span><h3>Libro de los Sueños</h3><p>Diario, símbolos recurrentes y estadísticas.</p></article>
+        <article class="book" data-open="luna"><span>☽</span><h3>Libro Lunar</h3><p>Fases lunares y correspondencias.</p></article>
+        <article class="book" data-open="grimorio"><span>✧</span><h3>Grimorio</h3><p>Hierbas, piedras, metales y planetas.</p></article>
+        <article class="book" data-open="bestiario"><span>♆</span><h3>Bestiario Prohibido</h3><p>Folclore, entidades y criaturas culturales.</p></article>
+        <article class="book" data-open="simbolos"><span>☍</span><h3>Codex Symbolorum</h3><p>Alquimia, astrología, sigilos e iconografía.</p></article>
+        <article class="book" data-open="archivo"><span>▣</span><h3>Archivo 404</h3><p>Historial visible y exportaciones locales.</p></article>
+        <article class="book" data-open="audio"><span>♫</span><h3>Cámara de Ecos</h3><p>Presets sonoros generados localmente.</p></article>
+      </section>
+
+      <section id="panel" class="panel" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <template id="entryTemplate">
+    <article class="entry-card">
+      <div><strong></strong><small></small></div>
+      <p></p>
+      <button class="tiny danger" type="button">Eliminar</button>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
