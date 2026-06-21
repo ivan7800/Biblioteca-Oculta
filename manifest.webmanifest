@@ -1,11 +1,11 @@
 {
-  "name": "Arcanum 404: Biblioteca Oculta",
+  "name": "Arcanum 404: Biblioteca Oculta PRO",
   "short_name": "Arcanum 404",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#08060a",
   "theme_color": "#08060a",
-  "description": "Biblioteca esotérica offline-first con tarot, runas, I Ching, sueños, luna, grimorio y archivo local.",
+  "description": "PWA offline de tarot, ouija ficticia, diario paranormal, runas, I Ching, sueños, luna, grimorio, bestiario, símbolos, comparador y archivo local.",
   "icons": [
     {
       "src": "assets/icon.svg",
