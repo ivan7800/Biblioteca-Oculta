@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#08060a",
   "theme_color": "#08060a",
-  "description": "PWA offline de tarot, ouija ficticia, diario paranormal, runas, I Ching, sueños, luna, grimorio, bestiario, símbolos, comparador y archivo local.",
+  "description": "PWA v2.1.2 offline de tarot, ouija ficticia, diario paranormal, runas, I Ching, sueños, luna, grimorio, bestiario, símbolos, comparador y archivo local.",
   "icons": [
     {
       "src": "assets/icon.svg",

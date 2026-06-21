@@ -3,7 +3,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const panel = $('#panel');
-const VERSION = '2.1.0-pro';
+const VERSION = '2.1.2-final';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -290,7 +290,7 @@ const modules = {
       ['archivo', '▣', 'Archivo 404', 'Historial visible, búsqueda, borrado selectivo, backup e importación segura.'],
       ['audio', '♬', 'Cámara de Ecos', 'Ambientes sonoros procedurales: biblioteca, lluvia, bosque, templo, mar, viento y cósmico.']
     ];
-    panel.innerHTML += `<div class="grid library">${cards.map(c => `<article class="card" data-open="${c[0]}"><span class="icon">${c[1]}</span><h3>${esc(c[2])}</h3><p>${esc(c[3])}</p></article>`).join('')}</div>${projectNotice()}`;
+    panel.innerHTML += `<div class="grid library">${cards.map(c => `<button class="card module-card" type="button" data-open="${c[0]}"><span class="icon">${c[1]}</span><h3>${esc(c[2])}</h3><p>${esc(c[3])}</p></button>`).join('')}</div>${projectNotice()}`;
   },
   tarot() {
     header('Libro del Destino', 'Tarot simbólico con tiradas guardadas en Archivo 404. Incluye exportación general desde el archivo y comparación entre lecturas.');
@@ -537,14 +537,17 @@ function moonCal(date) {
 }
 function moonEvents(date) {
   const targets = { 0: 'Luna nueva', 2: 'Cuarto creciente', 4: 'Luna llena', 6: 'Cuarto menguante' };
-  const seen = new Set(), out = [];
-  for (let i = 0; i < 90 && out.length < 6; i++) {
-    const d = new Date(date); d.setDate(date.getDate() + i);
+  const out = [];
+  let previous = getMoonPhase(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1)).index;
+  for (let i = 0; i < 120 && out.length < 8; i++) {
+    const d = new Date(date);
+    d.setDate(date.getDate() + i);
     const phase = getMoonPhase(d);
-    if (targets[phase.index] && !seen.has(`${phase.index}-${d.getMonth()}-${d.getDate()}`)) {
-      seen.add(`${phase.index}-${d.getMonth()}-${d.getDate()}`);
+    const enteredTarget = phase.index !== previous && Object.prototype.hasOwnProperty.call(targets, phase.index);
+    if (enteredTarget) {
       out.push({ badge: 'Evento lunar', title: targets[phase.index], date: d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) });
     }
+    previous = phase.index;
   }
   return out;
 }
@@ -619,7 +622,7 @@ function filterEncy(category = null) {
 }
 
 function exportJSON() {
-  download('arcanum404-backup-v2.1.0.json', JSON.stringify({
+  download('arcanum404-backup-v2.1.2.json', JSON.stringify({
     entries: store.get('entries', []), dreams: store.get('dreams', []), paranormal: store.get('paranormal', []),
     settings: { preset: store.get('preset', 'biblioteca'), vol: store.get('vol', 0.1) }, exportedAt: todayISO(), version: VERSION
   }, null, 2), 'application/json');
@@ -628,7 +631,7 @@ function exportTXT() {
   const entries = store.get('entries', []).map(e => `[${e.type}] ${e.date}\n${e.title}\n${e.body}`).join('\n\n---\n\n');
   const dreams = store.get('dreams', []).map(d => `[Sueño] ${d.date}\n${d.title}\n${d.body}`).join('\n\n---\n\n');
   const paranormal = store.get('paranormal', []).map(p => `[Paranormal] ${p.date}\n${p.title} · ${p.place}\n${p.type} · Intensidad ${p.intensity}/10\n${p.body}`).join('\n\n---\n\n');
-  download('arcanum404-archivo-v2.1.0.txt', `ARCANUM 404 v2.1.0\n\nLECTURAS\n\n${entries}\n\nSUEÑOS\n\n${dreams}\n\nDIARIO PARANORMAL\n\n${paranormal}`);
+  download('arcanum404-archivo-v2.1.2.txt', `ARCANUM 404 v2.1.2\n\nLECTURAS\n\n${entries}\n\nSUEÑOS\n\n${dreams}\n\nDIARIO PARANORMAL\n\n${paranormal}`);
 }
 function exportDreams() { download('arcanum404-suenos.json', JSON.stringify(store.get('dreams', []), null, 2), 'application/json'); }
 function exportParanormal() { download('arcanum404-diario-paranormal.json', JSON.stringify(store.get('paranormal', []), null, 2), 'application/json'); }
@@ -750,7 +753,11 @@ function openModule(name) {
 
 document.addEventListener('click', event => {
   const opener = event.target.closest('[data-open]');
-  if (opener && modules[opener.dataset.open]) openModule(opener.dataset.open);
+  if (opener && modules[opener.dataset.open]) {
+    event.preventDefault();
+    openModule(opener.dataset.open);
+    return;
+  }
   const action = event.target.closest('[data-act]');
   if (action) routeAct(action.dataset.act, action);
   const delEntry = event.target.closest('[data-del-entry]');
@@ -759,17 +766,35 @@ document.addEventListener('click', event => {
   if (delDream) { store.set('dreams', store.get('dreams', []).filter(x => x.id !== delDream.dataset.delDream)); modules.suenos(); }
   const delParanormal = event.target.closest('[data-del-paranormal]');
   if (delParanormal) { store.set('paranormal', store.get('paranormal', []).filter(x => x.id !== delParanormal.dataset.delParanormal)); modules.paranormal(); }
+
+  const nav = $('#nav');
+  if (nav?.classList.contains('open') && !event.target.closest('#nav') && !event.target.closest('#menuBtn')) {
+    closeMenu();
+  }
 });
 
 document.addEventListener('change', event => {
   if (event.target?.id === 'backupFile') handleBackupFile(event.target.files?.[0]);
 });
 
-$('#menuBtn').onclick = () => {
+function closeMenu() {
+  const nav = $('#nav');
+  nav?.classList.remove('open');
+  $('#menuBtn')?.setAttribute('aria-expanded', 'false');
+}
+
+$('#menuBtn').onclick = event => {
+  event.preventDefault();
   const nav = $('#nav');
   nav.classList.toggle('open');
-  $('#menuBtn').setAttribute('aria-expanded', nav.classList.contains('open'));
+  const opened = nav.classList.contains('open');
+  $('#menuBtn').setAttribute('aria-expanded', String(opened));
+  if (opened) nav.querySelector('button')?.focus({ preventScroll: true });
 };
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeMenu();
+});
 $('#dailyBtn').onclick = () => {
   const pool = [...data.symbols, ...data.grimoire, ...data.runes, ...data.bestiary];
   const item = rnd(pool);
