@@ -1,11 +1,5 @@
 # Privacidad
 
-Universo 404: Biblioteca Oculta es una aplicación estática y offline-first.
+Arcanum 404 no usa cuentas, servidores, cookies de terceros, analíticas ni APIs externas.
 
-- No usa backend.
-- No envía sueños, consultas ni lecturas a servidores.
-- No incluye analítica ni rastreadores.
-- Los datos se guardan en `localStorage` del navegador del usuario.
-- Borrar los datos del navegador eliminará el archivo local.
-
-La ouija, el tarot, las runas y el I Ching se presentan como herramientas simbólicas, narrativas y de introspección, no como asesoramiento médico, legal, financiero ni psicológico.
+Los registros, sueños y lecturas se guardan en el almacenamiento local del navegador. Puedes borrarlos desde la app o limpiando los datos del sitio en el navegador.

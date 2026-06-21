@@ -1,237 +1,67 @@
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const panel = $('#panel');
 
-const store = {
-  get(k, fallback) {
-    try { return JSON.parse(localStorage.getItem(k)) ?? fallback; }
-    catch { return fallback; }
-  },
-  set(k, v) {
-    try { localStorage.setItem(k, JSON.stringify(v)); return true; }
-    catch { return false; }
-  }
+const $=(s,r=document)=>r.querySelector(s); const $$=(s,r=document)=>[...r.querySelectorAll(s)]; const panel=$('#panel');
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rnd=a=>a[Math.floor(Math.random()*a.length)]; const id=()=>crypto?.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
+const now=()=>new Date().toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'}); const iso=()=>new Date().toISOString();
+const store={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}}};
+const saveEntry=(type,title,body,extra={})=>{const entries=store.get('entries',[]);entries.unshift({id:id(),type,title,body,date:now(),iso:iso(),...extra});store.set('entries',entries.slice(0,500));};
+const download=(name,text,type='text/plain')=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
+const header=(title,txt)=>{panel.innerHTML=`<h2>${esc(title)}</h2><p class="intro">${esc(txt)}</p>`; $$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.open===current));};
+const card=(title,body,badge='Resultado')=>`<article class="result"><span class="badge">${esc(badge)}</span><h3>${esc(title)}</h3><p>${esc(body)}</p></article>`;
+const data={
+ tarot:[['El Loco','inicio radical, viaje, inocencia peligrosa','Cruza el umbral, pero no confundas libertad con impulsividad.'],['El Mago','voluntad, técnica, enfoque','Tienes herramientas; falta ordenar la intención.'],['La Sacerdotisa','secreto, intuición, silencio','No fuerces la respuesta: escucha lo que no se dice.'],['La Emperatriz','creación, cuerpo, abundancia','La idea necesita alimento, tiempo y forma.'],['El Emperador','estructura, límite, autoridad','Pon reglas antes de pedir resultados.'],['El Hierofante','tradición, rito, maestro','Aprende el sistema antes de romperlo.'],['Los Enamorados','elección, vínculo, deseo','Toda elección revela una lealtad.'],['El Carro','avance, control, victoria tensa','Dirige fuerzas opuestas hacia un mismo eje.'],['La Justicia','consecuencia, equilibrio, verdad','La pregunta real es qué precio aceptas pagar.'],['El Ermitaño','retiro, búsqueda, lámpara','Reduce ruido: la pista está en lo pequeño.'],['La Rueda','ciclo, azar, giro','No todo se controla; sí se interpreta.'],['La Fuerza','coraje suave, paciencia','Domina sin aplastar.'],['El Colgado','pausa, inversión, sacrificio','Cambia de ángulo antes de actuar.'],['La Muerte','cierre, poda, transformación','Algo debe terminar para dejar espacio.'],['La Templanza','mezcla, cura, puente','Combina extremos sin diluirlos.'],['El Diablo','atadura, obsesión, deseo','Mira qué te posee mientras crees elegir.'],['La Torre','ruptura, revelación','Lo falso cae rápido cuando pierde soporte.'],['La Estrella','esperanza, guía, limpieza','Vuelve a la señal sencilla.'],['La Luna','sueño, niebla, imaginación','No decidas bajo bruma sin registrar señales.'],['El Sol','claridad, vitalidad, exposición','La verdad soporta ser vista.'],['El Juicio','llamada, despertar, balance','Responde a lo que llevas aplazando.'],['El Mundo','integración, cierre, viaje completo','Cierra el círculo y documenta lo aprendido.']],
+ runes:[['ᚠ Fehu','riqueza móvil, recursos, energía que circula'],['ᚢ Uruz','fuerza primaria, resistencia, salud'],['ᚦ Thurisaz','umbral, defensa, espina, conflicto'],['ᚨ Ansuz','mensaje, palabra, inspiración'],['ᚱ Raidho','viaje, ritmo, dirección'],['ᚲ Kenaz','antorcha, técnica, revelación'],['ᚷ Gebo','don, alianza, intercambio'],['ᚹ Wunjo','gozo, clan, armonía'],['ᚺ Hagalaz','granizo, crisis, interrupción'],['ᚾ Nauthiz','necesidad, fricción, disciplina'],['ᛁ Isa','hielo, pausa, inmovilidad'],['ᛃ Jera','cosecha, estación, paciencia'],['ᛇ Eihwaz','eje, muerte-vida, resistencia'],['ᛈ Perthro','azar, matriz, secreto'],['ᛉ Algiz','protección, alerta, santuario'],['ᛊ Sowilo','sol, victoria, claridad'],['ᛏ Tiwaz','justicia, sacrificio, norte moral'],['ᛒ Berkano','nacimiento, hogar, crecimiento'],['ᛖ Ehwaz','confianza, movimiento, cooperación'],['ᛗ Mannaz','humanidad, identidad, comunidad'],['ᛚ Laguz','agua, emoción, intuición'],['ᛜ Ingwaz','semilla, potencial, cierre interno'],['ᛞ Dagaz','amanecer, transformación, umbral luminoso'],['ᛟ Othala','herencia, raíz, territorio']],
+ symbols:[['Ouroboros','retorno, eternidad, autodevoración','Alquimia'],['Pentáculo','protección, cinco elementos, microcosmos','Magia ceremonial'],['Ankh','vida, aliento, continuidad','Egipto'],['Triskel','movimiento triple, cambio','Celta'],['Ojo','vigilancia, conciencia, revelación','Mediterráneo'],['Mercurio','mente, intercambio, mensajero','Alquimia/Astrología'],['Azufre','voluntad, fuego interno','Alquimia'],['Sal','cuerpo, memoria material','Alquimia'],['Árbol de la Vida','mapa de emanaciones y correspondencias','Cábala occidental'],['Vesica Piscis','intersección, nacimiento, geometría sagrada','Arte sacro'],['Espiral','trance, crecimiento, retorno','Megalítico'],['Rueda Solar','ciclo, fuego, estación','Europa antigua'],['Llave','acceso, secreto, frontera','Iconografía iniciática'],['Laberinto','prueba, centro, pérdida controlada','Mediterráneo'],['Espejo negro','reflejo, sombra, visión interior','Tradición mágica moderna'],['Rosa cruz','unión de materia y espíritu','Hermetismo'],['Triángulo','manifestación, dirección, elemento','Geometría ritual'],['Círculo','límite sagrado, totalidad','Magia ceremonial']],
+ grimoire:[['Artemisa','protección, sueño, umbral','Hierba'],['Romero','memoria, limpieza, vigor','Hierba'],['Lavanda','calma, descanso, claridad','Hierba'],['Ruda','límite, defensa popular','Hierba'],['Salvia','purificación cultural, cierre','Hierba'],['Laurel','victoria, visión, palabra','Hierba'],['Mirra','duelo, profundidad, templo','Resina'],['Incienso','elevación, rito, presencia','Resina'],['Obsidiana','sombra, corte, espejo','Piedra'],['Amatista','sueño, templanza, intuición','Piedra'],['Cuarzo','amplificación, claridad','Piedra'],['Hematita','tierra, cuerpo, límite','Piedra'],['Plata','luna, reflejo, receptividad','Metal'],['Cobre','Venus, conducción, vínculo','Metal'],['Hierro','Marte, defensa, fuerza','Metal'],['Oro','sol, centro, soberanía','Metal'],['Saturno','tiempo, límite, estructura','Planeta'],['Júpiter','expansión, ley, abundancia','Planeta'],['Venus','deseo, belleza, alianza','Planeta'],['Marte','acción, corte, conflicto','Planeta'],['Luna','sueño, memoria, marea','Astro'],['Sol','claridad, vida, voluntad','Astro']],
+ bestiary:[['Basilisco','mirada letal y autoridad corrupta','Bestiarios medievales'],['Lamia','figura ambigua de deseo y amenaza','Mundo grecolatino'],['Kelpie','caballo acuático asociado a ríos peligrosos','Folclore escocés'],['Banshee','presagio sonoro de muerte familiar','Folclore irlandés'],['Golem','cuerpo artificial animado por palabra','Tradición judía'],['Ifrit','espíritu ígneo poderoso','Tradición islámica'],['Tengu','entidad aérea, marcial, liminal','Japón'],['Wendigo','hambre insaciable y pérdida humana','Tradiciones algonquinas'],['Strigoi','retorno inquieto, vampirismo folclórico','Europa oriental'],['Ahuizotl','criatura acuática de manos peligrosas','Tradición mexica'],['Nuckelavee','horror marino sin piel','Orcadas'],['Manticora','híbrido devorador de frontera','Bestiarios'],['Leviatán','caos oceánico primordial','Tradición bíblica'],['Djinn','voluntad invisible, pacto y ambigüedad','Oriente Medio'],['Trasgo','doméstico, bromista, inquietante','Folclore ibérico'],['Coco','miedo infantil, sombra disciplinaria','Tradición ibérica/latam']],
+ dream:['agua','casa','puerta','madre','padre','niño','bosque','mar','dientes','sombra','espejo','perro','gato','tren','hospital','iglesia','lluvia','barro','sangre','escuela','ascensor','pozo','llave','ventana','carretera','nieve','pez','pájaro','máscara','libro','teléfono','fuego','ruina','ciudad','habitacion','habitaciones'],
+ correspond:[['Lunes','Luna, memoria, sueños, familia'],['Martes','Marte, acción, corte, valor'],['Miércoles','Mercurio, mensajes, estudio, comercio'],['Jueves','Júpiter, expansión, ley, protección'],['Viernes','Venus, belleza, vínculo, deseo'],['Sábado','Saturno, límite, estructura, cierre'],['Domingo','Sol, vitalidad, claridad, propósito']]
 };
-
-const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
-const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
-const uid = () => (globalThis.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const now = () => new Date().toLocaleString('es-ES', { dateStyle:'medium', timeStyle:'short' });
-const isoDate = () => new Date().toISOString();
-
-const tarot = ['El Loco','El Mago','La Sacerdotisa','La Emperatriz','El Emperador','El Hierofante','Los Enamorados','El Carro','La Justicia','El Ermitaño','La Rueda','La Fuerza','El Colgado','La Muerte','La Templanza','El Diablo','La Torre','La Estrella','La Luna','El Sol','El Juicio','El Mundo'];
-const tarotMean = {
- 'El Loco':'inicio, riesgo, salto de fe, camino sin mapa','El Mago':'voluntad, habilidad, enfoque, acto consciente','La Sacerdotisa':'secreto, intuición, silencio, conocimiento velado','La Emperatriz':'creación, cuerpo, abundancia, cuidado','El Emperador':'orden, estructura, límite, autoridad','El Hierofante':'tradición, rito, maestro, institución','Los Enamorados':'elección, vínculo, deseo, bifurcación','El Carro':'avance, control, victoria, tensión dirigida','La Justicia':'equilibrio, consecuencia, verdad, reparación','El Ermitaño':'retirada, búsqueda, lámpara interior, prudencia','La Rueda':'cambio, ciclo, azar, giro inevitable','La Fuerza':'dominio suave, coraje, paciencia, instinto domado','El Colgado':'pausa, sacrificio, inversión, otra mirada','La Muerte':'final, transición, poda, transformación','La Templanza':'mezcla, cura, moderación, puente','El Diablo':'atadura, obsesión, deseo, sombra material','La Torre':'ruptura, revelación, caída de lo falso','La Estrella':'esperanza, guía, limpieza, horizonte','La Luna':'sueño, niebla, miedo, imaginación','El Sol':'claridad, vitalidad, alegría, exposición','El Juicio':'llamada, despertar, rendición de cuentas','El Mundo':'cierre, integración, viaje completo'
+const modules={
+ dashboard(){header('Sala principal','Elige un libro. Cada módulo guarda su actividad en Archivo 404 y funciona sin conexión.'); panel.innerHTML+=`<div class="grid library">${[['tarot','✦','Libro del Destino','Tarot con carta única, tirada de 3 y cruz simple.'],['ouija','◉','Libro de los Espíritus','Sesiones narrativas ficticias, seguras y guardadas.'],['runas','ᚱ','Libro de las Runas','Elder Futhark completo con tiradas.'],['iching','☯','Libro de los Hexagramas','Monedas, mutaciones y hexagrama resultante.'],['suenos','☾','Libro de los Sueños','Diario, símbolos, estadísticas y calendario.'],['luna','☽','Libro Lunar','Calendario perpetuo mes a mes y eventos.'],['grimorio','✧','Grimorio','Correspondencias de hierbas, piedras, metales y planetas.'],['bestiario','♆','Bestiario Prohibido','Folclore mundial en clave cultural.'],['simbolos','☍','Codex Symbolorum','Buscador de símbolos y correspondencias.'],['rituales','🕯','Ritual Generator','Rituales ficticios narrativos para escritura y juego.'],['consulta','◆','Consulta rápida','Combina tarot, runa, luna y símbolo.'],['archivo','▣','Archivo 404','Historial, exportación y copias locales.']].map(x=>`<article class="card" data-open="${x[0]}"><span class="icon">${x[1]}</span><h3>${esc(x[2])}</h3><p>${esc(x[3])}</p></article>`).join('')}</div><div class="notice"><strong>Aviso:</strong> herramienta simbólica, cultural y creativa. No sustituye consejo médico, legal, financiero ni psicológico.</div>`;},
+ tarot(){header('Libro del Destino','Tiradas simbólicas de tarot. Puedes guardar, comparar y exportar las lecturas desde Archivo 404.'); panel.innerHTML+=`<div class="controls"><button class="primary" data-act="tarot1">Carta única</button><button class="secondary" data-act="tarot3">Pasado · Presente · Umbral</button><button class="secondary" data-act="tarot5">Cruz 404</button></div><div id="out"></div>`;},
+ ouija(){header('Libro de los Espíritus','Tablero narrativo ficticio. No afirma comunicación real: genera respuestas atmosféricas para juego, escritura y exploración simbólica.'); panel.innerHTML+=`<label>Pregunta</label><input class="input" id="q" maxlength="180" placeholder="Escribe una pregunta simbólica"><div class="controls"><button class="primary" data-act="ouija">Consultar tablero</button></div><div id="out"></div>`;},
+ runas(){header('Libro de las Runas','Elder Futhark completo: significados, tirada simple y tirada de tres posiciones.'); panel.innerHTML+=`<div class="controls"><button class="primary" data-act="rune1">Una runa</button><button class="secondary" data-act="rune3">Tres runas</button><button class="secondary" data-act="runeAll">Ver Futhark</button></div><div id="out"></div>`;},
+ iching(){header('Libro de los Hexagramas','Lanza seis líneas con monedas virtuales. Incluye líneas mutables y hexagrama transformado aproximado.'); panel.innerHTML+=`<div class="controls"><button class="primary" data-act="iching">Lanzar monedas</button></div><div id="out"></div>`;},
+ suenos(){header('Libro de los Sueños','Diario local con calendario, símbolos recurrentes y estadísticas.'); const dreams=store.get('dreams',[]); panel.innerHTML+=`<label>Título</label><input class="input" id="dreamTitle" maxlength="90" placeholder="Ej. La casa bajo la lluvia"><label>Sueño</label><textarea id="dreamBody" maxlength="2200" placeholder="Describe imágenes, emociones, lugares y símbolos..."></textarea><div class="controls"><button class="primary" data-act="saveDream">Guardar sueño</button><button class="secondary" data-act="exportDreams">Exportar sueños</button></div><div class="stats"><div class="stat"><strong>${dreams.length}</strong><span>sueños</span></div><div class="stat"><strong>${esc(topDream(dreams)||'—')}</strong><span>símbolo frecuente</span></div><div class="stat"><strong>${avgWords(dreams)}</strong><span>palabras/media</span></div><div class="stat"><strong>${dreamsThisMonth(dreams)}</strong><span>este mes</span></div></div><div class="calendar">${dreamCal(dreams,new Date())}</div><h3>Registros</h3><div id="dreamList">${dreams.map(d=>entryHTML(d,'dream')).join('')||card('Sin sueños guardados','Empieza registrando un sueño.','Diario')}</div>`;},
+ luna(){header('Libro Lunar','Calendario lunar perpetuo: pasa de mes en mes, calcula fases diarias y muestra próximos hitos aproximados.'); const y=store.get('moonY',new Date().getFullYear()), m=store.get('moonM',new Date().getMonth()); const date=new Date(y,m,1); const today=getMoonPhase(new Date()); panel.innerHTML+=`<div class="stats"><div class="stat"><strong>${today.emoji}</strong><span>${esc(today.name)}</span></div><div class="stat"><strong>${esc(today.energy)}</strong><span>energía</span></div><div class="stat"><strong>${new Date().toLocaleDateString('es-ES',{weekday:'long'})}</strong><span>día</span></div><div class="stat"><strong>${esc(dayCorrespondence())}</strong><span>correspondencia</span></div></div><p class="intro">${esc(today.tip)}</p><div class="controls"><button class="secondary" data-act="moonPrev">← Mes anterior</button><button class="primary" data-act="moonToday">Hoy</button><button class="secondary" data-act="moonNext">Mes siguiente →</button></div><div class="calendar">${moonCal(date)}</div><h3>Próximos eventos</h3><div class="results">${moonEvents(new Date()).map(e=>card(e.title,e.date,e.badge)).join('')}</div>`;},
+ grimorio(){ency('Grimorio','Correspondencias culturales para consulta creativa. No son instrucciones médicas ni sustituyen conocimiento profesional.',data.grimoire);},
+ bestiario(){ency('Bestiario Prohibido','Criaturas y entidades de folclore mundial como archivo cultural e inspiración narrativa.',data.bestiary);},
+ simbolos(){ency('Codex Symbolorum','Biblioteca buscable de símbolos, procedencias y lecturas comparadas.',data.symbols);},
+ rituales(){header('Ritual Generator','Generador de rituales ficticios para narrativa, juegos de rol y atmósfera. No requiere objetos reales.'); panel.innerHTML+=`<label>Intención creativa</label><input class="input" id="intent" maxlength="80" placeholder="Ej. cerrar un ciclo, encontrar una pista, escribir una escena"><div class="controls"><button class="primary" data-act="ritual">Generar ritual ficticio</button></div><div id="out"></div>`;},
+ consulta(){header('Consulta rápida','Una lectura combinada con carta, runa, símbolo y luna actual. Ideal como resumen diario.'); panel.innerHTML+=`<label>Pregunta opcional</label><input class="input" id="quickQ" maxlength="160" placeholder="¿Qué debo observar ahora?"><div class="controls"><button class="primary" data-act="quick">Generar consulta</button></div><div id="out"></div>`;},
+ archivo(){header('Archivo 404','Historial visible, búsqueda, borrado selectivo y exportación local.'); const entries=store.get('entries',[]), dreams=store.get('dreams',[]); panel.innerHTML+=`<div class="stats"><div class="stat"><strong>${entries.length}</strong><span>lecturas</span></div><div class="stat"><strong>${dreams.length}</strong><span>sueños</span></div><div class="stat"><strong>${entries.filter(e=>e.type==='Tarot').length}</strong><span>tarot</span></div><div class="stat"><strong>${entries.filter(e=>e.type==='I Ching').length}</strong><span>I Ching</span></div></div><div class="searchrow"><label>Buscar en archivo<input class="input" id="search" placeholder="tarot, luna, símbolo..."></label><button class="primary" data-act="searchArchive">Buscar</button></div><div class="controls"><button class="secondary" data-act="exportJSON">Exportar JSON</button><button class="secondary" data-act="exportTXT">Exportar TXT</button><button class="tiny danger" data-act="clearAll">Borrar todo</button></div><div id="archiveList">${archiveHTML(entries)}</div>`;},
+ audio(){header('Cámara de Ecos','Audio procedural generado en el navegador: biblioteca, lluvia, bosque, templo, mar, viento y cósmico. Sin archivos externos.'); const p=store.get('preset','biblioteca'); panel.innerHTML+=`<article class="card"><label>Ambiente<select id="preset">${Object.keys(audioPresets).map(k=>`<option value="${k}" ${k===p?'selected':''}>${esc(audioPresets[k].label)}</option>`).join('')}</select></label><label>Volumen<input class="slider" id="vol" type="range" min="0" max="0.35" step="0.01" value="${store.get('vol',0.10)}"></label><div class="controls"><button class="primary" data-act="playAudio">Activar</button><button class="secondary" data-act="stopAudio">Detener</button></div><p id="presetDesc">${esc(audioPresets[p].desc)}</p></article>`; $('#preset').onchange=e=>{store.set('preset',e.target.value);$('#presetDesc').textContent=audioPresets[e.target.value].desc;if(audioCtx) startAudio()}; $('#vol').oninput=e=>{store.set('vol',Number(e.target.value)); if(gain) gain.gain.value=Number(e.target.value)};},
+ ajustes(){header('Ajustes y privacidad','Control local de datos, avisos y copia de seguridad.'); panel.innerHTML+=`<div class="notice"><strong>Privacidad:</strong> no hay servidores, cuentas, analíticas ni APIs externas. Todo se guarda en localStorage de este navegador.</div><div class="controls"><button class="secondary" data-act="exportJSON">Copia de seguridad JSON</button><button class="tiny danger" data-act="clearAll">Borrar datos locales</button></div><div class="notice"><strong>Límite futuro:</strong> para miles de registros conviene migrar a IndexedDB.</div>`;}
 };
-const runes = [
- ['ᚠ Fehu','riqueza móvil, recursos, energía que circula'],['ᚢ Uruz','fuerza primaria, salud, resistencia'],['ᚦ Thurisaz','umbral, defensa, conflicto'],['ᚨ Ansuz','mensaje, palabra, inspiración'],['ᚱ Raidho','viaje, ritmo, dirección'],['ᚲ Kenaz','antorcha, técnica, revelación'],['ᚷ Gebo','don, alianza, intercambio'],['ᚹ Wunjo','gozo, clan, armonía'],['ᚺ Hagalaz','granizo, crisis, interrupción'],['ᚾ Nauthiz','necesidad, fricción, disciplina'],['ᛁ Isa','hielo, pausa, inmovilidad'],['ᛃ Jera','cosecha, temporada, paciencia'],['ᛇ Eihwaz','eje, muerte-vida, resistencia'],['ᛈ Perthro','azar, matriz, secreto'],['ᛉ Algiz','protección, alerta, santuario'],['ᛊ Sowilo','sol, victoria, claridad'],['ᛏ Tiwaz','justicia, sacrificio, norte moral'],['ᛒ Berkano','nacimiento, hogar, crecimiento'],['ᛖ Ehwaz','confianza, movimiento, cooperación'],['ᛗ Mannaz','humanidad, identidad, comunidad'],['ᛚ Laguz','agua, emoción, intuición'],['ᛜ Ingwaz','semilla, potencial, cierre interno'],['ᛞ Dagaz','amanecer, cambio, umbral luminoso'],['ᛟ Othala','herencia, raíz, territorio']
-];
-const symbols = [
- ['Ouroboros','ciclo, eternidad, autodevoración, retorno','Alquimia / emblemas herméticos'],['Pentáculo','protección, cinco elementos, microcosmos','Magia ceremonial y folclore moderno'],['Ankh','vida, aliento, continuidad','Egipto antiguo'],['Triskel','movimiento triple, transformación, flujo','Cultura céltica y atlántica'],['Ojo','vigilancia, conciencia, revelación','Mediterráneo y Próximo Oriente'],['Mercurio','mente, intercambio, alquimia, mensajero','Astrología / alquimia'],['Azufre','fuego interno, voluntad, alma alquímica','Alquimia'],['Sal','cuerpo, fijación, memoria material','Alquimia'],['Árbol de la Vida','emanaciones, mapa de correspondencias','Cábala occidental'],['Llave','acceso, secreto, permiso, frontera','Iconografía iniciática'],['Labrys','doble hacha, umbral, poder ritual','Mediterráneo antiguo'],['Vesica Piscis','intersección, nacimiento, geometría sagrada','Arte sacro y geometría'],['Espiral','retorno, crecimiento, trance','Arte megalítico'],['Rueda Solar','ciclo, estación, fuego','Europa antigua'],['Mano protectora','protección, límite, mirada desviada','Mediterráneo / Oriente Medio']
-];
-const bestiary = [
- ['Basilisco','Criatura de mirada letal en tradiciones europeas. Útil como símbolo de miedo paralizante.','Folclore europeo'],['Banshee','Figura del folclore irlandés asociada al lamento y al presagio.','Irlanda'],['Doppelgänger','Doble inquietante; tema excelente para identidad, sombra y paranoia.','Romanticismo germánico'],['Lamia','Entidad híbrida del imaginario mediterráneo, vinculada a deseo y peligro.','Grecia / Mediterráneo'],['Strigoi','Figura vampírica del folclore rumano.','Rumanía'],['Kelpie','Espíritu acuático cambiante del folclore escocés.','Escocia'],['Golem','Criatura de barro animada por palabra y propósito.','Tradición judía centroeuropea'],['Tulpas','Forma mental materializada en imaginarios teosóficos y modernos.','Teosofía / reinterpretación moderna'],['Manticora','Bestia compuesta, mezcla de humano, león y aguijón venenoso.','Bestiarios medievales'],['Nuckelavee','Entidad marina y ecuestre especialmente oscura del folclore de las Orcadas.','Orcadas'],['Jorōgumo','Araña cambiante asociada a seducción, trampa y transformación.','Japón'],['Ifrit','Espíritu de fuego poderoso en tradiciones islámicas y narrativas posteriores.','Oriente Medio'],['Leshy','Guardián del bosque, cambiante y ambiguo.','Folclore eslavo'],['Wendigo','Figura de hambre, invierno y deshumanización en relatos algonquinos.','Norteamérica algonquina'],['Acheri','Espíritu asociado a enfermedad y montaña en relatos del Himalaya.','Himalaya']
-];
-const correspondences = [
- ['Lavanda','calma, sueño, limpieza suave','Hierba'],['Romero','memoria, protección, claridad','Hierba'],['Salvia','purificación, cierre, frontera','Hierba'],['Laurel','victoria, visión, palabra oracular','Hierba'],['Ruda','defensa, corte, alejamiento','Hierba'],['Artemisa','sueño, luna, tránsito','Hierba'],['Obsidiana','sombra, corte, espejo oscuro','Piedra'],['Cuarzo','amplificación, claridad, foco','Piedra'],['Amatista','sueño, templanza, percepción','Piedra'],['Labradorita','umbral, brillo oculto, protección psíquica','Piedra'],['Hierro','defensa, límite, fuerza','Metal'],['Plata','luna, reflejo, intuición','Metal'],['Cobre','venus, conducción, unión','Metal'],['Mercurio','movilidad, lenguaje, transmutación','Metal / planeta'],['Saturno','tiempo, límite, ruina fértil','Planeta'],['Venus','atracción, arte, deseo','Planeta'],['Marte','conflicto, energía, ruptura','Planeta'],['Júpiter','expansión, ley, autoridad benéfica','Planeta'],['Luna','sueño, memoria, marea interior','Astro'],['Sol','claridad, vitalidad, exposición','Astro']
-];
-const dreamSymbols = ['agua','puerta','casa','madre','padre','niño','sombra','perro','gato','mar','bosque','escalera','ascensor','dientes','sangre','luz','tren','hotel','iglesia','pozo','llave','espejo','teléfono','pantalla','lluvia','carretera'];
-const audioPresets = {
-  biblioteca: { label:'Biblioteca antigua', freqs:[55,82.4,110], type:'triangle', pulse:0.08, desc:'Dron grave, madera antigua y respiración de sala cerrada.' },
-  lluvia: { label:'Lluvia', freqs:[140,190,260,310], type:'sine', pulse:0.04, desc:'Textura irregular y suave, pensada para escritura nocturna.' },
-  bosque: { label:'Bosque nocturno', freqs:[62,124,248], type:'sine', pulse:0.06, desc:'Zumbido bajo, insectos imaginarios y distancia.' },
-  templo: { label:'Templo', freqs:[73.4,146.8,220], type:'sine', pulse:0.1, desc:'Resonancia ceremonial y aire de piedra.' },
-  mar: { label:'Mar', freqs:[49,98,196], type:'triangle', pulse:0.05, desc:'Oleaje oscuro generado por osciladores lentos.' },
-  viento: { label:'Viento', freqs:[88,132,176,264], type:'sawtooth', pulse:0.03, desc:'Corriente tenue para escenas de archivo abandonado.' },
-  cosmico: { label:'Sonidos cósmicos', freqs:[41.2,61.7,123.4,246.8], type:'sine', pulse:0.12, desc:'Dron espacial, frío y amplio.' }
-};
-
-function saveEntry(type, title, body) {
-  const entries = store.get('entries', []);
-  entries.unshift({ id: uid(), type, title: String(title).slice(0, 120), body: String(body).slice(0, 5000), date: now(), iso: isoDate() });
-  store.set('entries', entries.slice(0, 300));
-}
-function renderHeader(title, text) {
-  panel.innerHTML = `<h2>${escapeHTML(title)}</h2><p class="panel-intro">${escapeHTML(text)}</p>`;
-  $$('.side-nav button').forEach(b => b.classList.toggle('active', b.dataset.open === current));
-}
-function resultCard(title, text, badge='Resultado') {
-  return `<article class="result"><span class="badge">${escapeHTML(badge)}</span><h3>${escapeHTML(title)}</h3><p>${escapeHTML(text)}</p></article>`;
-}
-function downloadFile(filename, mime, text) {
-  const blob = new Blob([text], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 600);
-}
-function allArchiveData() {
-  return { exportedAt: new Date().toISOString(), entries: store.get('entries', []), dreams: store.get('dreams', []), volume: store.get('volume', 0.12), preset: store.get('audioPreset', 'biblioteca') };
-}
-function exportJSON() { downloadFile('universo-404-archivo.json', 'application/json', JSON.stringify(allArchiveData(), null, 2)); }
-function exportTXT() {
-  const data = allArchiveData();
-  const lines = ['UNIVERSO 404 · ARCHIVO LOCAL', `Exportado: ${new Date().toLocaleString('es-ES')}`, '', '== LECTURAS Y SESIONES =='];
-  data.entries.forEach(e => lines.push(`[${e.date}] ${e.type} · ${e.title}`, e.body, ''));
-  lines.push('== SUEÑOS ==');
-  data.dreams.forEach(d => lines.push(`[${d.date}] ${d.title}`, d.body, ''));
-  downloadFile('universo-404-archivo.txt', 'text/plain;charset=utf-8', lines.join('\n'));
-}
-
-let current = 'tarot';
-const modules = {
-  tarot() {
-    renderHeader('Libro del Destino', 'Tiradas de tarot con historial automático y exportación desde Archivo 404.');
-    panel.innerHTML += `<div class="controls"><button class="primary-btn" id="one">Carta única</button><button class="secondary-btn" id="three">Tirada de tres</button><button class="secondary-btn" data-open="archivo">Ver historial</button></div><div class="results" id="tarotResults"></div>`;
-    $('#one').onclick = () => { const c = rnd(tarot); $('#tarotResults').innerHTML = resultCard(c, tarotMean[c], 'Carta'); saveEntry('Tarot', c, tarotMean[c]); };
-    $('#three').onclick = () => { const cards = [...tarot].sort(() => Math.random() - .5).slice(0,3); $('#tarotResults').innerHTML = cards.map((c,i) => resultCard(c, tarotMean[c], ['Pasado','Presente','Umbral'][i])).join(''); saveEntry('Tarot', 'Tirada de tres cartas', cards.map(c => `${c}: ${tarotMean[c]}`).join('\n')); };
-  },
-  ouija() {
-    renderHeader('Libro de los Espíritus', 'Tablero ficticio para sesiones atmosféricas. Respuestas narrativas generadas localmente, sin afirmar contacto real con entidades.');
-    panel.innerHTML += `<div class="tool-card"><label>Pregunta<textarea id="q" maxlength="500" placeholder="Escribe tu pregunta..."></textarea></label><div class="controls"><button class="primary-btn" id="ask">Consultar tablero</button><button class="secondary-btn" id="clear">Limpiar</button><button class="secondary-btn" data-open="archivo">Sesiones guardadas</button></div><div id="answer"></div></div>`;
-    const phrases = ['NO SIGAS LA VOZ, SIGUE LA HUELLA','EL NOMBRE CAMBIÓ AL SER LEÍDO','LA PUERTA NO ESTÁ CERRADA, ESTÁ RECORDANDO','TRES GOLPES EN EL SUEÑO, UNO EN LA CASA','NO ES UN FANTASMA, ES UNA REPETICIÓN','EL ARCHIVO 404 NO DEVUELVE LO QUE TOMA','LA CASA CONTESTA CUANDO DEJAS DE PREGUNTAR','EL ESPEJO APRENDIÓ TU GESTO'];
-    $('#ask').onclick = () => { const a = rnd(phrases); $('#answer').innerHTML = resultCard(a, 'Respuesta narrativa generada para ambientación, escritura y juego.', 'Tablero'); saveEntry('Ouija', $('#q').value || 'Consulta sin pregunta', a); };
-    $('#clear').onclick = () => { $('#q').value = ''; $('#answer').innerHTML = ''; };
-  },
-  runas() {
-    renderHeader('Libro de las Runas', 'Elder Futhark completo, tiradas de una o tres runas, significados e historial.');
-    panel.innerHTML += `<div class="controls"><button class="primary-btn" id="r1">Una runa</button><button class="secondary-btn" id="r3">Tres runas</button><button class="secondary-btn" data-open="archivo">Historial</button></div><div class="results" id="runes"></div><div class="tool-grid">${runes.map(r => `<article class="tool-card"><span class="badge">Elder Futhark</span><h3>${escapeHTML(r[0])}</h3><p>${escapeHTML(r[1])}</p></article>`).join('')}</div>`;
-    const draw = n => { const rs = [...runes].sort(() => Math.random() - .5).slice(0,n); $('#runes').innerHTML = rs.map((r,i) => resultCard(r[0], r[1], n===3 ? ['Raíz','Tensión','Consejo'][i] : 'Runa')).join(''); saveEntry('Runas', `Tirada de ${n}`, rs.map(r => r.join(': ')).join('\n')); };
-    $('#r1').onclick = () => draw(1); $('#r3').onclick = () => draw(3);
-  },
-  iching() {
-    renderHeader('Libro de los Hexagramas', 'Genera seis líneas con monedas virtuales. Las líneas 6 y 9 son mutables y el historial permite comparar consultas.');
-    panel.innerHTML += `<div class="controls"><button class="primary-btn" id="coins">Lanzar monedas</button><button class="secondary-btn" data-open="archivo">Comparar consultas</button></div><div id="hex"></div>`;
-    $('#coins').onclick = () => { const lines = []; for (let i=0;i<6;i++){ const sum = [0,0,0].map(() => Math.random() < .5 ? 2 : 3).reduce((a,b) => a+b, 0); lines.unshift(sum); } const html = lines.map(n => `<div class="result hex-line"><strong>${n%2 ? '━━━━━━' : '━━  ━━'}</strong> <span class="badge">${n===6||n===9 ? 'mutable' : 'fija'}</span></div>`).join(''); const msg = 'Hexagrama generado. Lee de abajo hacia arriba: observa qué líneas mutan y qué patrón se repite.'; $('#hex').innerHTML = html + resultCard('Interpretación breve', msg, 'I Ching'); saveEntry('I Ching', 'Hexagrama', `Líneas: ${lines.join('-')}\n${msg}`); };
-  },
-  diario() {
-    renderHeader('Libro de los Sueños', 'Diario privado con calendario, símbolos recurrentes, estadísticas y exportación local.');
-    const dreams = store.get('dreams', []);
-    const stats = dreamStats(dreams);
-    panel.innerHTML += `<div class="tool-grid"><div class="tool-card"><input class="input" id="dreamTitle" maxlength="90" placeholder="Título del sueño"><textarea id="dreamText" maxlength="3000" placeholder="Describe el sueño..."></textarea><button class="primary-btn" id="saveDream">Guardar sueño</button><p class="hint">Privado: se guarda solo en este navegador.</p></div><div class="tool-card"><h3>Símbolos detectables</h3><p>${dreamSymbols.map(escapeHTML).join(', ')}</p><button class="secondary-btn" id="analyzeDreams">Analizar archivo</button></div><div class="tool-card"><h3>Estadísticas</h3><p><strong>${dreams.length}</strong> sueños guardados.</p><p>Mes activo: <strong>${escapeHTML(stats.topMonth || 'sin datos')}</strong></p><p>Símbolo dominante: <strong>${escapeHTML(stats.topSymbol || 'sin datos')}</strong></p></div></div><div id="dreamOut" class="results"></div><h3>Calendario de sueños</h3><div class="calendar mini">${renderDreamCalendar(dreams)}</div><div id="dreamList"></div>`;
-    $('#saveDream').onclick = () => { const list = store.get('dreams', []); const item = { id:uid(), title:$('#dreamTitle').value || 'Sueño sin título', body:$('#dreamText').value, date:now(), iso:isoDate() }; list.unshift(item); store.set('dreams', list); saveEntry('Sueños', item.title, item.body || 'Registro sin descripción'); modules.diario(); };
-    $('#analyzeDreams').onclick = () => { const counts = countDreamSymbols(store.get('dreams', [])); $('#dreamOut').innerHTML = counts.length ? counts.map(c => resultCard(c[0], `Aparece ${c[1]} veces en tu archivo.`, 'Símbolo')).join('') : resultCard('Sin patrones', 'Aún no hay símbolos recurrentes suficientes.', 'Análisis'); };
-    renderDreams();
-  },
-  luna() {
-    renderHeader('Libro Lunar', 'Fase lunar actual, calendario mensual aproximado, eventos del ciclo y correspondencias.');
-    const phase = getMoonPhase(new Date());
-    panel.innerHTML += `<div class="stats"><div class="stat"><strong>${phase.name}</strong><span>Fase actual aproximada</span></div><div class="stat"><strong>${phase.emoji}</strong><span>Símbolo</span></div><div class="stat"><strong>${phase.energy}</strong><span>Correspondencia</span></div><div class="stat"><strong>${new Date().toLocaleDateString('es-ES')}</strong><span>Fecha</span></div></div><div class="tool-card"><h3>Consejo de archivo</h3><p>${escapeHTML(phase.tip)}</p></div><h3>Calendario lunar mensual</h3><div class="calendar">${renderMoonCalendar(new Date())}</div><h3>Próximos eventos aproximados</h3><div class="results">${nextMoonEvents(new Date()).map(e => resultCard(e.title, e.date, e.badge)).join('')}</div>`;
-  },
-  grimorio() {
-    renderHeader('Grimorio', 'Correspondencias culturales y simbólicas para escritura, ambientación, worldbuilding y consulta personal.');
-    panel.innerHTML += `<div class="tool-grid">${correspondences.map(x => `<article class="tool-card"><span class="badge">${escapeHTML(x[2])}</span><h3>${escapeHTML(x[0])}</h3><p>${escapeHTML(x[1])}</p></article>`).join('')}</div>`;
-  },
-  bestiario() {
-    renderHeader('Bestiario Prohibido', 'Criaturas de folclore y cultura comparada, presentadas como archivo cultural e histórico-literario.');
-    panel.innerHTML += `<div class="tool-grid">${bestiary.map(x => `<article class="tool-card"><span class="badge">${escapeHTML(x[2])}</span><h3>${escapeHTML(x[0])}</h3><p>${escapeHTML(x[1])}</p></article>`).join('')}</div>`;
-  },
-  simbolos() {
-    renderHeader('Codex Symbolorum', 'Alquimia, astrología, sigilos históricos, Árbol de la Vida y simbología comparada.');
-    panel.innerHTML += `<div class="tool-grid">${symbols.map(x => `<article class="tool-card"><span class="badge">${escapeHTML(x[2])}</span><h3>${escapeHTML(x[0])}</h3><p>${escapeHTML(x[1])}</p></article>`).join('')}</div>`;
-  },
-  archivo() {
-    renderHeader('Archivo 404', 'Historial visible de tarot, ouija, runas, I Ching y sueños. Exportación local en JSON o TXT.');
-    const entries = store.get('entries', []);
-    const dreams = store.get('dreams', []);
-    panel.innerHTML += `<div class="stats"><div class="stat"><strong>${entries.length}</strong><span>lecturas/sesiones</span></div><div class="stat"><strong>${dreams.length}</strong><span>sueños</span></div><div class="stat"><strong>${entries.filter(e=>e.type==='Tarot').length}</strong><span>tarot</span></div><div class="stat"><strong>${entries.filter(e=>e.type==='I Ching').length}</strong><span>I Ching</span></div></div><div class="controls"><button class="primary-btn" id="exportJson">Exportar JSON</button><button class="secondary-btn" id="exportTxt">Exportar TXT</button><button class="tiny danger" id="clearArchive">Borrar archivo local</button></div><div id="archiveList"></div>`;
-    $('#exportJson').onclick = exportJSON; $('#exportTxt').onclick = exportTXT;
-    $('#clearArchive').onclick = () => { if (confirm('¿Borrar historial y sueños guardados en este navegador?')) { store.set('entries', []); store.set('dreams', []); modules.archivo(); } };
-    renderArchive();
-  },
-  audio() {
-    renderHeader('Cámara de Ecos', 'Presets ambientales generados con Web Audio: sin archivos externos, sin copyright y con volumen persistente.');
-    const preset = store.get('audioPreset', 'biblioteca');
-    panel.innerHTML += `<div class="tool-card"><label>Ambiente <select id="preset">${Object.entries(audioPresets).map(([k,v]) => `<option value="${k}" ${k===preset?'selected':''}>${escapeHTML(v.label)}</option>`).join('')}</select></label><div class="controls"><button class="primary-btn" id="playAudio">Activar ambiente</button><button class="secondary-btn" id="stopAudio">Detener</button></div><label>Volumen <input class="slider" type="range" min="0" max="0.35" step="0.01" id="vol"></label><p id="presetDesc">${escapeHTML(audioPresets[preset].desc)}</p></div>`;
-    $('#vol').value = store.get('volume', 0.12);
-    $('#vol').oninput = e => { store.set('volume', Number(e.target.value)); if (audioGain) audioGain.gain.value = Number(e.target.value); };
-    $('#preset').onchange = e => { store.set('audioPreset', e.target.value); $('#presetDesc').textContent = audioPresets[e.target.value].desc; if (audioCtx) startAudio(); };
-    $('#playAudio').onclick = startAudio; $('#stopAudio').onclick = stopAudio;
-  }
-};
-
-function renderArchive() {
-  const list = $('#archiveList'); if (!list) return;
-  const entries = store.get('entries', []);
-  if (!entries.length) { list.innerHTML = resultCard('Archivo vacío', 'Haz una tirada, consulta o sueño para empezar a guardar historial.', 'Archivo'); return; }
-  list.innerHTML = entries.map(e => `<article class="entry-card"><div><span class="badge">${escapeHTML(e.type)}</span><strong>${escapeHTML(e.title)}</strong><small>${escapeHTML(e.date)}</small><p>${escapeHTML(e.body)}</p></div><button class="tiny danger" data-del-entry="${escapeHTML(e.id)}">Eliminar</button></article>`).join('');
-  $$('[data-del-entry]').forEach(b => b.onclick = () => { store.set('entries', store.get('entries', []).filter(e => e.id !== b.dataset.delEntry)); modules.archivo(); });
-}
-function renderDreams() {
-  const list = $('#dreamList'); if (!list) return;
-  const dreams = store.get('dreams', []);
-  list.innerHTML = dreams.map(d => `<article class="entry-card"><div><strong>${escapeHTML(d.title)}</strong><small>${escapeHTML(d.date)}</small><p>${escapeHTML(d.body)}</p></div><button class="tiny danger" data-del="${escapeHTML(d.id)}">Eliminar</button></article>`).join('');
-  $$('[data-del]').forEach(b => b.onclick = () => { store.set('dreams', store.get('dreams', []).filter(d => d.id !== b.dataset.del)); modules.diario(); });
-}
-function countDreamSymbols(dreams) {
-  const text = dreams.map(d => d.body.toLowerCase()).join(' ');
-  return dreamSymbols.map(s => [s, (text.match(new RegExp(`\\b${s}\\b`, 'g')) || []).length]).filter(x => x[1]).sort((a,b) => b[1] - a[1]);
-}
-function dreamStats(dreams) {
-  const counts = countDreamSymbols(dreams);
-  const months = {};
-  dreams.forEach(d => { const key = d.iso ? new Date(d.iso).toLocaleDateString('es-ES', { month:'long', year:'numeric' }) : 'sin fecha'; months[key] = (months[key] || 0) + 1; });
-  const topMonth = Object.entries(months).sort((a,b)=>b[1]-a[1])[0]?.[0];
-  return { topSymbol: counts[0]?.[0], topMonth };
-}
-function renderDreamCalendar(dreams) {
-  const today = new Date();
-  const year = today.getFullYear(); const month = today.getMonth();
-  const first = new Date(year, month, 1); const days = new Date(year, month + 1, 0).getDate();
-  const dreamDays = new Set(dreams.map(d => d.iso ? new Date(d.iso) : null).filter(Boolean).filter(d => d.getFullYear()===year && d.getMonth()===month).map(d => d.getDate()));
-  let html = `<div class="cal-title">${today.toLocaleDateString('es-ES', { month:'long', year:'numeric' })}</div>`;
-  ['L','M','X','J','V','S','D'].forEach(d => html += `<span class="cal-head">${d}</span>`);
-  const offset = (first.getDay() + 6) % 7;
-  for (let i=0;i<offset;i++) html += '<span></span>';
-  for (let d=1; d<=days; d++) html += `<span class="cal-day ${dreamDays.has(d) ? 'marked' : ''}">${d}${dreamDays.has(d) ? ' ✦' : ''}</span>`;
-  return html;
-}
-function getMoonPhase(date) {
-  const lp = 2551443; const seconds = date.getTime() / 1000; const newMoon = new Date('2000-01-06T18:14:00Z').getTime() / 1000; const phase = ((seconds - newMoon) % lp) / lp;
-  const phases = [['Luna nueva','🌑','inicio','Buen momento para abrir un registro, limpiar prioridades y formular una pregunta sencilla.'],['Creciente','🌒','siembra','Conviene desarrollar una idea y observar qué señales se repiten.'],['Cuarto creciente','🌓','decisión','El archivo pide acción concreta: elige una puerta y cruza.'],['Gibosa creciente','🌔','ajuste','Corrige, pule, escucha patrones.'],['Luna llena','🌕','revelación','Anota sueños y símbolos: lo oculto suele tomar forma narrativa.'],['Gibosa menguante','🌖','digestión','Integra lo visto sin precipitar conclusiones.'],['Cuarto menguante','🌗','corte','Elimina ruido, falsas pistas y cargas inútiles.'],['Menguante','🌘','cierre','Cierra ciclos, archiva aprendizajes y descansa.']];
-  const i = Math.floor(phase * 8) % 8; return { name: phases[i][0], emoji: phases[i][1], energy: phases[i][2], tip: phases[i][3], index: i };
-}
-function renderMoonCalendar(date) {
-  const year = date.getFullYear(); const month = date.getMonth(); const first = new Date(year, month, 1); const days = new Date(year, month + 1, 0).getDate();
-  let html = `<div class="cal-title">${date.toLocaleDateString('es-ES', { month:'long', year:'numeric' })}</div>`;
-  ['L','M','X','J','V','S','D'].forEach(d => html += `<span class="cal-head">${d}</span>`);
-  const offset = (first.getDay() + 6) % 7; for (let i=0;i<offset;i++) html += '<span></span>';
-  for (let d=1; d<=days; d++) { const ph = getMoonPhase(new Date(year, month, d)); html += `<span class="cal-day" title="${escapeHTML(ph.name)}">${d}<small>${ph.emoji}</small></span>`; }
-  return html;
-}
-function nextMoonEvents(date) {
-  const targets = {0:'Luna nueva', 2:'Cuarto creciente', 4:'Luna llena', 6:'Cuarto menguante'};
-  const found = []; const seen = new Set();
-  for (let i=0;i<60 && found.length<4;i++) { const d = new Date(date); d.setDate(date.getDate() + i); const ph = getMoonPhase(d); if (targets[ph.index] && !seen.has(ph.index)) { found.push({ badge:'Evento lunar', title:targets[ph.index], date:d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' }) }); seen.add(ph.index); } }
-  return found;
-}
-
-let audioCtx, audioGain, oscillators = [], lfos = [];
-function startAudio() {
-  stopAudio();
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  audioGain = audioCtx.createGain();
-  audioGain.gain.value = store.get('volume', 0.12);
-  audioGain.connect(audioCtx.destination);
-  const preset = audioPresets[store.get('audioPreset', 'biblioteca')] || audioPresets.biblioteca;
-  preset.freqs.forEach((f, i) => {
-    const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); const lfo = audioCtx.createOscillator(); const lg = audioCtx.createGain();
-    o.type = preset.type; o.frequency.value = f * (1 + i * 0.002);
-    g.gain.value = 0.06 / (i + 1);
-    lfo.frequency.value = preset.pulse * (i + 1); lg.gain.value = 0.025;
-    lfo.connect(lg); lg.connect(g.gain); o.connect(g); g.connect(audioGain);
-    o.start(); lfo.start(); oscillators.push(o); lfos.push(lfo);
-  });
-}
-function stopAudio() { [...oscillators, ...lfos].forEach(o => { try { o.stop(); } catch {} }); oscillators = []; lfos = []; if (audioCtx) { audioCtx.close(); audioCtx = null; } }
-function openModule(name) { current = name; modules[name](); location.hash = name; $('#moduleNav').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false'); panel.scrollIntoView({ behavior:'smooth', block:'start' }); }
-
-document.addEventListener('click', e => { const opener = e.target.closest('[data-open]'); if (opener && modules[opener.dataset.open]) openModule(opener.dataset.open); });
-$('#menuBtn').onclick = () => { const nav = $('#moduleNav'); nav.classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', nav.classList.contains('open')); };
-$('#dailyBtn').onclick = () => { const pool = [...symbols.map(s=>[s[0],s[1]]), ...runes.map(r=>[r[0],r[1]]), ...correspondences.map(c=>[c[0],c[1]])]; const x = rnd(pool); $('#dailyTitle').textContent = x[0]; $('#dailyText').textContent = x[1]; };
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {})); }
-openModule(location.hash.replace('#','') && modules[location.hash.replace('#','')] ? location.hash.replace('#','') : 'tarot');
+function ency(title,intro,arr){header(title,intro); panel.innerHTML+=`<div class="searchrow"><label>Buscar<input class="input" id="encySearch" placeholder="nombre, tema, origen..."></label><button class="primary" data-act="filterEncy">Buscar</button></div><div id="ency" class="grid">${arr.map(x=>`<article class="card"><span class="badge">${esc(x[2])}</span><h3>${esc(x[0])}</h3><p>${esc(x[1])}</p></article>`).join('')}</div>`; panel.dataset.ency=JSON.stringify(arr);}
+function entryHTML(e,kind='entry'){return `<article class="entry"><div><span class="badge">${esc(e.type||'Sueño')}</span><strong>${esc(e.title)}</strong><small>${esc(e.date)}</small><p>${esc(e.body)}</p></div><button class="tiny danger" data-del-${kind}="${esc(e.id)}">Eliminar</button></article>`}
+function archiveHTML(entries){return entries.map(e=>entryHTML(e,'entry')).join('')||card('Archivo vacío','Haz una consulta o tirada para empezar.','Archivo')}
+function tarotDraw(n,spread){let deck=[...data.tarot].sort(()=>Math.random()-.5).slice(0,n); let html='<div class="results">'+deck.map((c,i)=>card(c[0],`${spread[i]||'Carta'}: ${c[1]}. Consejo: ${c[2]}`,'Tarot')).join('')+'</div>'; $('#out').innerHTML=html; saveEntry('Tarot',spread.join(' · '),deck.map((c,i)=>`${spread[i]||'Carta'} — ${c[0]}: ${c[1]}`).join('\n'));}
+function ouija(){const q=$('#q')?.value.trim().slice(0,180)||'sin pregunta'; const words=['ESPERA','NO MIRES SOLO UNA PUERTA','EL NOMBRE SE REPITE','ARCHIVA LA SEÑAL','LA RESPUESTA ESTA EN EL SUEÑO','CIERRA EL CIRCULO','VUELVE CUANDO LA LUNA CAMBIE']; const ans=rnd(words); $('#out').innerHTML=card('Respuesta del tablero',`Pregunta: ${q}. Mensaje: ${ans}.`,'Ouija ficticia'); saveEntry('Ouija',q,ans);}
+function runeDraw(n){let rs=[...data.runes].sort(()=>Math.random()-.5).slice(0,n); let pos=n===3?['Raíz','Tensión','Consejo']:['Runa']; $('#out').innerHTML='<div class="results">'+rs.map((r,i)=>card(r[0],`${pos[i]}: ${r[1]}`,'Runa')).join('')+'</div>'; saveEntry('Runas',pos.join(' · '),rs.map((r,i)=>`${pos[i]} — ${r[0]}: ${r[1]}`).join('\n'));}
+function iching(){let lines=[]; for(let i=0;i<6;i++){let s=0; for(let j=0;j<3;j++)s+=Math.random()<.5?2:3; lines.push(s);} const map={6:'viejo yin mutable',7:'joven yang',8:'joven yin',9:'viejo yang mutable'}; const body=lines.map((v,i)=>`Línea ${i+1}: ${v} — ${map[v]}`).join('\n'); $('#out').innerHTML=card('Hexagrama generado',body.replaceAll('\n','<br>'),'I Ching'); saveEntry('I Ching','Hexagrama de seis líneas',body);}
+function saveDream(){const title=$('#dreamTitle').value.trim().slice(0,90)||'Sueño sin título'; const body=$('#dreamBody').value.trim().slice(0,2200); if(!body){$('#dreamBody').focus();return} const dreams=store.get('dreams',[]); dreams.unshift({id:id(),title,body,date:now(),iso:iso(),type:'Sueño'}); store.set('dreams',dreams.slice(0,500)); saveEntry('Sueño',title,body); modules.suenos();}
+function topDream(ds){const text=ds.map(d=>d.body.toLowerCase()).join(' '); return data.dream.map(s=>[s,(text.match(new RegExp(`\\b${s}\\b`,'g'))||[]).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1])[0]?.[0]}
+function avgWords(ds){if(!ds.length)return 0; return Math.round(ds.reduce((a,d)=>a+d.body.split(/\s+/).filter(Boolean).length,0)/ds.length)}
+function dreamsThisMonth(ds){const n=new Date(); return ds.filter(d=>{const x=new Date(d.iso);return x.getMonth()===n.getMonth()&&x.getFullYear()===n.getFullYear()}).length}
+function dreamCal(ds,date){const y=date.getFullYear(),m=date.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(); const marks=new Set(ds.map(d=>new Date(d.iso)).filter(d=>d.getFullYear()===y&&d.getMonth()===m).map(d=>d.getDate())); let h=`<div class="cal-title"><span>${date.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}</span></div>`; ['L','M','X','J','V','S','D'].forEach(d=>h+=`<span class="cal-head">${d}</span>`); for(let i=0;i<(first.getDay()+6)%7;i++)h+='<span></span>'; for(let d=1;d<=days;d++)h+=`<span class="cal-day ${marks.has(d)?'marked':''}">${d}${marks.has(d)?'<small>✦</small>':''}</span>`; return h;}
+function getMoonPhase(date){const lp=2551443,sec=date.getTime()/1000,nm=new Date('2000-01-06T18:14:00Z').getTime()/1000,ph=((sec-nm)%lp+lp)%lp/lp; const p=[['Luna nueva','🌑','inicio','Formula intención y limpia prioridades.'],['Creciente','🌒','siembra','Desarrolla una idea y observa señales.'],['Cuarto creciente','🌓','decisión','Elige una puerta y actúa.'],['Gibosa creciente','🌔','ajuste','Corrige, pule y compara patrones.'],['Luna llena','🌕','revelación','Registra sueños: lo oculto se vuelve narrativo.'],['Gibosa menguante','🌖','digestión','Integra sin precipitar conclusiones.'],['Cuarto menguante','🌗','corte','Elimina ruido y cargas inútiles.'],['Menguante','🌘','cierre','Archiva aprendizajes y descansa.']]; const i=Math.floor(ph*8)%8; return {index:i,name:p[i][0],emoji:p[i][1],energy:p[i][2],tip:p[i][3]};}
+function moonCal(date){const y=date.getFullYear(),m=date.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),today=new Date(); let h=`<div class="cal-title"><span>${date.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}</span></div>`; ['L','M','X','J','V','S','D'].forEach(d=>h+=`<span class="cal-head">${d}</span>`); for(let i=0;i<(first.getDay()+6)%7;i++)h+='<span></span>'; for(let d=1;d<=days;d++){let ph=getMoonPhase(new Date(y,m,d)); let cls=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d?'today':''; h+=`<span class="cal-day ${cls}" title="${esc(ph.name)}">${d}<small>${ph.emoji}</small></span>`} return h;}
+function moonEvents(date){let targets={0:'Luna nueva',2:'Cuarto creciente',4:'Luna llena',6:'Cuarto menguante'},seen=new Set(),out=[]; for(let i=0;i<75&&out.length<4;i++){let d=new Date(date);d.setDate(date.getDate()+i);let ph=getMoonPhase(d); if(targets[ph.index]&&!seen.has(ph.index)){seen.add(ph.index);out.push({badge:'Evento lunar',title:targets[ph.index],date:d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})})}} return out;}
+function dayCorrespondence(){return data.correspond[(new Date().getDay()+6)%7][1].split(',')[0]}
+const audioPresets={biblioteca:{label:'Biblioteca antigua',desc:'Zumbido grave y respiración de sala vacía.',freqs:[55,110,220],type:'sine',pulse:.05},lluvia:{label:'Lluvia',desc:'Textura ondulante similar a lluvia lejana.',freqs:[80,122,244],type:'triangle',pulse:.13},bosque:{label:'Bosque nocturno',desc:'Capas lentas y orgánicas.',freqs:[64,96,192],type:'sine',pulse:.09},templo:{label:'Templo',desc:'Dron ceremonial y profundo.',freqs:[48,96,144],type:'sine',pulse:.03},mar:{label:'Mar',desc:'Oleaje grave y cíclico.',freqs:[44,88,176],type:'triangle',pulse:.06},viento:{label:'Viento',desc:'Oscilación fría y ligera.',freqs:[120,240,360],type:'sine',pulse:.18},cosmico:{label:'Cósmico',desc:'Dron espacial y distante.',freqs:[39,78,156,312],type:'sawtooth',pulse:.04}};
+let audioCtx,gain,osc=[],lfo=[]; function startAudio(){stopAudio(); audioCtx=new (AudioContext||webkitAudioContext)(); gain=audioCtx.createGain(); gain.gain.value=store.get('vol',.10); gain.connect(audioCtx.destination); const p=audioPresets[store.get('preset','biblioteca')]; p.freqs.forEach((f,i)=>{let o=audioCtx.createOscillator(),g=audioCtx.createGain(),l=audioCtx.createOscillator(),lg=audioCtx.createGain(); o.type=p.type;o.frequency.value=f;g.gain.value=.055/(i+1);l.frequency.value=p.pulse*(i+1);lg.gain.value=.025;l.connect(lg);lg.connect(g.gain);o.connect(g);g.connect(gain);o.start();l.start();osc.push(o);lfo.push(l)});}
+function stopAudio(){[...osc,...lfo].forEach(o=>{try{o.stop()}catch{}});osc=[];lfo=[]; if(audioCtx){audioCtx.close(); audioCtx=null}}
+function ritual(){const intent=$('#intent').value.trim().slice(0,80)||'abrir una escena'; const herb=rnd(data.grimoire), sym=rnd(data.symbols), moon=getMoonPhase(new Date()), phrase=rnd(['Dibuja un umbral en papel.','Anota tres palabras y tacha una.','Abre un libro al azar y roba una imagen.','Cuenta siete respiraciones antes de escribir.']); const body=`Intención: ${intent}. Fase: ${moon.name}. Correspondencia: ${herb[0]} (${herb[1]}). Símbolo: ${sym[0]} (${sym[1]}). Acto ficticio: ${phrase}`; $('#out').innerHTML=card('Ritual narrativo 404',body,'Ficción'); saveEntry('Ritual',intent,body);}
+function quick(){const q=$('#quickQ')?.value.trim().slice(0,160)||'consulta rápida'; const t=rnd(data.tarot), r=rnd(data.runes), s=rnd(data.symbols), m=getMoonPhase(new Date()); const body=`Pregunta: ${q}. Tarot: ${t[0]} — ${t[1]}. Runa: ${r[0]} — ${r[1]}. Símbolo: ${s[0]} — ${s[1]}. Luna: ${m.name} — ${m.tip}`; $('#out').innerHTML=card('Lectura combinada',body,'Consulta'); saveEntry('Consulta',q,body);}
+function exportJSON(){download('arcanum404-backup.json',JSON.stringify({entries:store.get('entries',[]),dreams:store.get('dreams',[]),exportedAt:iso(),version:'2.0.0'},null,2),'application/json')}
+function exportTXT(){const es=store.get('entries',[]).map(e=>`[${e.type}] ${e.date}\n${e.title}\n${e.body}`).join('\n\n---\n\n'); const ds=store.get('dreams',[]).map(d=>`[Sueño] ${d.date}\n${d.title}\n${d.body}`).join('\n\n---\n\n'); download('arcanum404-archivo.txt',`ARCANUM 404\n\n${es}\n\nSUEÑOS\n\n${ds}`)}
+function filterEncy(){const q=$('#encySearch').value.toLowerCase().trim(); const arr=JSON.parse(panel.dataset.ency||'[]').filter(x=>x.join(' ').toLowerCase().includes(q)); $('#ency').innerHTML=arr.map(x=>`<article class="card"><span class="badge">${esc(x[2])}</span><h3>${esc(x[0])}</h3><p>${esc(x[1])}</p></article>`).join('')||card('Sin resultados','Prueba con otro término.','Búsqueda');}
+function routeAct(act){if(act==='tarot1')tarotDraw(1,['Clave']); if(act==='tarot3')tarotDraw(3,['Pasado','Presente','Umbral']); if(act==='tarot5')tarotDraw(5,['Centro','Sombra','Recurso','Peligro','Consejo']); if(act==='ouija')ouija(); if(act==='rune1')runeDraw(1); if(act==='rune3')runeDraw(3); if(act==='runeAll')$('#out').innerHTML='<div class="grid">'+data.runes.map(r=>`<article class="card"><h3>${esc(r[0])}</h3><p>${esc(r[1])}</p></article>`).join('')+'</div>'; if(act==='iching')iching(); if(act==='saveDream')saveDream(); if(act==='exportDreams')download('arcanum404-suenos.json',JSON.stringify(store.get('dreams',[]),null,2),'application/json'); if(act==='moonPrev'){let y=store.get('moonY',new Date().getFullYear()),m=store.get('moonM',new Date().getMonth())-1;if(m<0){m=11;y--}store.set('moonY',y);store.set('moonM',m);modules.luna()} if(act==='moonNext'){let y=store.get('moonY',new Date().getFullYear()),m=store.get('moonM',new Date().getMonth())+1;if(m>11){m=0;y++}store.set('moonY',y);store.set('moonM',m);modules.luna()} if(act==='moonToday'){store.set('moonY',new Date().getFullYear());store.set('moonM',new Date().getMonth());modules.luna()} if(act==='ritual')ritual(); if(act==='quick')quick(); if(act==='exportJSON')exportJSON(); if(act==='exportTXT')exportTXT(); if(act==='filterEncy')filterEncy(); if(act==='searchArchive'){const q=$('#search').value.toLowerCase(); $('#archiveList').innerHTML=archiveHTML(store.get('entries',[]).filter(e=>(e.title+e.body+e.type).toLowerCase().includes(q)))} if(act==='clearAll'&&confirm('¿Borrar todos los datos locales de Arcanum 404?')){store.set('entries',[]);store.set('dreams',[]);modules.archivo()} if(act==='playAudio')startAudio(); if(act==='stopAudio')stopAudio();}
+let current='dashboard'; function openModule(name){current=name; modules[name](); location.hash=name; $('#nav').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded','false'); panel.focus({preventScroll:true}); panel.scrollIntoView({behavior:'smooth',block:'start'});}
+document.addEventListener('click',e=>{const op=e.target.closest('[data-open]'); if(op&&modules[op.dataset.open]) openModule(op.dataset.open); const act=e.target.closest('[data-act]'); if(act) routeAct(act.dataset.act); const de=e.target.closest('[data-del-entry]'); if(de){store.set('entries',store.get('entries',[]).filter(x=>x.id!==de.dataset.delEntry));modules.archivo()} const dd=e.target.closest('[data-del-dream]'); if(dd){store.set('dreams',store.get('dreams',[]).filter(x=>x.id!==dd.dataset.delDream));modules.suenos()}});
+$('#menuBtn').onclick=()=>{const n=$('#nav'); n.classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded',n.classList.contains('open'))};
+$('#dailyBtn').onclick=()=>{const pool=[...data.symbols,...data.grimoire,...data.runes]; const x=rnd(pool); $('#dailyTitle').textContent=x[0]; $('#dailyText').textContent=x[1];};
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+openModule(location.hash.replace('#','')&&modules[location.hash.replace('#','')]?location.hash.replace('#',''):'dashboard');

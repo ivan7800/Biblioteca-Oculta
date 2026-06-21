@@ -1,1 +1,17 @@
-{"id":"/arcanum404/","name":"Universo 404: Biblioteca Oculta","short_name":"Arcanum 404","description":"Biblioteca esotérica offline con tarot, ouija simulada, runas, I Ching, sueños, luna, grimorio, bestiario y símbolos.","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#09070b","theme_color":"#09070b","orientation":"portrait-primary","categories":["books","entertainment","lifestyle"],"icons":[{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "name": "Arcanum 404: Biblioteca Oculta",
+  "short_name": "Arcanum 404",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#08060a",
+  "theme_color": "#08060a",
+  "description": "Biblioteca esotérica offline-first con tarot, runas, I Ching, sueños, luna, grimorio y archivo local.",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

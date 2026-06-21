@@ -1,63 +1,34 @@
-# Universo 404: Biblioteca Oculta
+# Arcanum 404: Biblioteca Oculta
 
-**Versión 1.1.0 — Edición ampliada para GitHub.**
+Versión 2.0.0
 
-PWA esotérica offline-first en HTML, CSS y JavaScript puro.
+PWA offline-first en HTML, CSS y JavaScript puro. Sin dependencias externas, sin APIs, sin tracking y lista para GitHub Pages.
 
-## Módulos incluidos
+## Módulos
 
-- Tarot: carta única, tirada de tres cartas, historial y exportación desde Archivo 404.
-- Ouija simulada: tablero narrativo ficticio, sesiones guardadas, sin afirmaciones paranormales reales.
-- Runas: Elder Futhark completo, una o tres runas, significados e historial.
-- I Ching: lanzamiento de monedas virtuales, líneas mutables y comparación mediante historial.
-- Diario de sueños: registros locales, calendario mensual, análisis de símbolos recurrentes y estadísticas.
-- Calendario lunar: fase actual, calendario mensual, próximos eventos aproximados y correspondencias.
-- Grimorio: hierbas, piedras, metales y planetas.
-- Bestiario: criaturas de folclore como archivo cultural.
-- Codex Symbolorum: biblioteca de símbolos.
-- Cámara de Ecos: presets de audio ambiental generados con Web Audio, sin archivos externos.
+- Sala principal con acceso a todos los libros.
+- Tarot: carta única, tirada de 3 y Cruz 404.
+- Ouija ficticia: tablero narrativo simulado, sin afirmaciones paranormales reales.
+- Runas: Elder Futhark completo.
+- I Ching: monedas virtuales, líneas mutables y archivo.
+- Sueños: diario, calendario, símbolos recurrentes y estadísticas.
+- Libro Lunar: calendario perpetuo mes a mes, fase diaria y próximos hitos lunares aproximados.
+- Grimorio: correspondencias de hierbas, piedras, metales, planetas y astros.
+- Bestiario Prohibido: folclore mundial en clave cultural.
+- Codex Symbolorum: biblioteca buscable de símbolos.
+- Ritual Generator: rituales ficticios para narrativa y rol.
+- Consulta rápida: lectura combinada con carta, runa, símbolo y luna.
+- Archivo 404: historial visible, búsqueda, borrado selectivo y exportación JSON/TXT.
+- Cámara de Ecos: audio procedural local sin copyright.
 
 ## Privacidad
 
-La app no envía datos a ningún servidor. Los sueños, sesiones y lecturas se guardan en `localStorage` del navegador.
+Todo se guarda en `localStorage` del navegador. No hay servidor ni envío de datos.
 
-## Cómo usar
+## Publicación
 
-Abre `index.html` directamente o súbelo a GitHub Pages. Para que la PWA offline funcione correctamente, úsala desde HTTPS, por ejemplo GitHub Pages.
+Sube todo el contenido de la carpeta a GitHub y activa GitHub Pages.
 
-## Estructura
+## Nota
 
-```text
-index.html
-styles.css
-app.js
-manifest.webmanifest
-sw.js
-assets/icon.svg
-```
-
-## Nota legal y cultural
-
-El contenido se presenta como herramienta simbólica, cultural, creativa y de entretenimiento. No sustituye consejo profesional ni afirma resultados sobrenaturales.
-
-
-## Auditoría v1.0.1
-
-- Endurecida la seguridad frente a inyección HTML en el diario de sueños.
-- Añadida Content Security Policy.
-- Mejorado el service worker con `skipWaiting`, `clients.claim` y cache versionada.
-- Añadidos límites de entrada, aviso de privacidad y foco visible accesible.
-- Añadidos `LICENSE`, `.gitignore` y `PRIVACY.md` para publicación en GitHub.
-
-## Aviso
-
-Las funciones esotéricas son simbólicas, culturales y narrativas. No sustituyen consejo profesional.
-
-## Novedades v1.1.0
-
-- Nuevo módulo Archivo 404 con historial visible.
-- Exportación local en JSON y TXT.
-- Presets sonoros: biblioteca antigua, lluvia, bosque nocturno, templo, mar, viento y cósmico.
-- Calendario lunar mensual y eventos aproximados.
-- Calendario de sueños, símbolos recurrentes y estadísticas.
-- Grimorio, Bestiario y Codex ampliados.
+Proyecto simbólico, cultural, creativo y de entretenimiento. No sustituye consejo profesional ni afirma resultados sobrenaturales.
