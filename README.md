@@ -1,6 +1,6 @@
 # Arcanum 404: Biblioteca Oculta
 
-**Versión 2.1.3**
+**Versión 2.1.4**
 
 PWA offline-first en HTML, CSS y JavaScript puro. Sin dependencias externas, sin APIs, sin tracking y lista para GitHub Pages.
 
@@ -38,9 +38,10 @@ Todo se guarda en `localStorage` del navegador. No hay servidor, cuentas de usua
 
 Proyecto simbólico, cultural, creativo y de entretenimiento. No sustituye consejo profesional ni afirma resultados sobrenaturales.
 
-## Cambios v2.1.3
+## Cambios v2.1.4
 
-- Eliminado lenguaje autopromocional de la interfaz pública.
-- Título interno simplificado a `Biblioteca Oculta · v2.1.3`.
+- Encabezado público simplificado a `Archivo 404 · Offline`.
+- Nombre visible más sobrio: `Biblioteca Oculta`.
 - Manifest, README, service worker y exportaciones actualizados al mismo versionado.
+- Caché PWA renovada para evitar que el navegador muestre una edición anterior.
 - Caché PWA renovada para evitar que GitHub Pages sirva una edición anterior.
