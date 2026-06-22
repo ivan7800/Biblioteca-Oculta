@@ -3,7 +3,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const panel = $('#panel');
-const VERSION = '2.1.2-final';
+const VERSION = '2.1.3';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -272,7 +272,7 @@ const data = {
 
 const modules = {
   dashboard() {
-    header('Sala principal', 'Elige un libro. Esta edición PRO integra módulos completos, diario paranormal separado, comparador de consultas, archivo exportable y enciclopedias ampliadas.');
+    header('Sala principal', 'Elige un libro. La biblioteca integra módulos completos, diario paranormal separado, comparador de consultas, archivo exportable y enciclopedias ampliadas.');
     const cards = [
       ['tarot', '✦', 'Libro del Destino', 'Tarot con carta única, tirada de 3, Cruz 404, historial y exportación.'],
       ['ouija', '◉', 'Libro de los Espíritus', 'Tablero narrativo ficticio con sesiones guardadas y acceso al diario paranormal.'],
@@ -622,7 +622,7 @@ function filterEncy(category = null) {
 }
 
 function exportJSON() {
-  download('arcanum404-backup-v2.1.2.json', JSON.stringify({
+  download('arcanum404-backup-v2.1.3.json', JSON.stringify({
     entries: store.get('entries', []), dreams: store.get('dreams', []), paranormal: store.get('paranormal', []),
     settings: { preset: store.get('preset', 'biblioteca'), vol: store.get('vol', 0.1) }, exportedAt: todayISO(), version: VERSION
   }, null, 2), 'application/json');
@@ -631,7 +631,7 @@ function exportTXT() {
   const entries = store.get('entries', []).map(e => `[${e.type}] ${e.date}\n${e.title}\n${e.body}`).join('\n\n---\n\n');
   const dreams = store.get('dreams', []).map(d => `[Sueño] ${d.date}\n${d.title}\n${d.body}`).join('\n\n---\n\n');
   const paranormal = store.get('paranormal', []).map(p => `[Paranormal] ${p.date}\n${p.title} · ${p.place}\n${p.type} · Intensidad ${p.intensity}/10\n${p.body}`).join('\n\n---\n\n');
-  download('arcanum404-archivo-v2.1.2.txt', `ARCANUM 404 v2.1.2\n\nLECTURAS\n\n${entries}\n\nSUEÑOS\n\n${dreams}\n\nDIARIO PARANORMAL\n\n${paranormal}`);
+  download('arcanum404-archivo-v2.1.3.txt', `ARCANUM 404 v2.1.3\n\nLECTURAS\n\n${entries}\n\nSUEÑOS\n\n${dreams}\n\nDIARIO PARANORMAL\n\n${paranormal}`);
 }
 function exportDreams() { download('arcanum404-suenos.json', JSON.stringify(store.get('dreams', []), null, 2), 'application/json'); }
 function exportParanormal() { download('arcanum404-diario-paranormal.json', JSON.stringify(store.get('paranormal', []), null, 2), 'application/json'); }
